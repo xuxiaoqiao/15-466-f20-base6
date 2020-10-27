@@ -4,6 +4,11 @@
 
 namespace view {
 
+void TextSpanCenter(TextSpan *s, int y_pos) {
+	int width = s->get_width();
+	s->set_position(((int)ViewContext::get().logical_size_.x - width) / 2, y_pos);
+};
+
 InGamePanel::InGamePanel() {
 	set_state_waiting_others();
 	dice_view_->set_font_size(32).set_font(FontFace::IBMPlexMono);
@@ -98,6 +103,7 @@ bool InGamePanel::handle_keypress(SDL_Keycode key) {
 
 WaitingClaimDialog::WaitingClaimDialog() {
 	label_->set_text("Waiting responses from the other player");
+	TextSpanCenter(label_.get(), 600);
 }
 
 void WaitingClaimDialog::draw() { label_->draw(); }
@@ -208,10 +214,6 @@ void MakeClaimDialog::update_content() {
 /************** RespondClaimDialog **********/
 
 RespondClaimDialog::RespondClaimDialog() {
-	auto center = [](TextSpan *s, int y_pos) {
-		int width = s->get_width();
-		s->set_position(((int)ViewContext::get().logical_size_.x - width) / 2, y_pos);
-	};
 	prompt1_->set_text("The other player made an claim:")
 		.set_font_size(48)
 		.set_position(300, 200);
@@ -219,7 +221,7 @@ RespondClaimDialog::RespondClaimDialog() {
 	reveal_->set_font_size(32).set_font(FontFace::IBMPlexMono).set_position(400, 450);
 	continue_->set_font_size(32).set_font(FontFace::IBMPlexMono).set_position(600, 450);
 	help_msg_->set_text("[Use arrow keys to select. Press enter to submit]");
-	center(help_msg_.get(), 600);
+	TextSpanCenter(help_msg_.get(), 600);
 	update_content();
 }
 
@@ -330,6 +332,15 @@ void PlayerTile::draw() {
 	username_->draw();
 	dices_->draw();
 	score_->draw();
+}
+
+WaitingRoomPanel::WaitingRoomPanel() {
+	heading_->set_text("AAAA").set_font_size(48);
+	TextSpanCenter(heading_.get(), 50);
+	waiting_room_label_->set_text("Waiting room").set_font_size(16);
+	TextSpanCenter(waiting_room_label_.get(), 100);
+	help_msg_->set_text("[Press enter to begin]").set_font_size(16);
+	TextSpanCenter(help_msg_.get(), 600);
 }
 }
 
