@@ -8,8 +8,10 @@
 #include <iostream>
 #include <cassert>
 #include <unordered_map>
+#include <time.h>
 
 void game_start(std::vector<uint8_t>& dices){
+	std::srand(time(NULL));
 	for(unsigned int i = 0; i< dices.size();i++){
 		dices[i] = 1+(std::rand()%5);
 	}
@@ -235,7 +237,7 @@ int main(int argc, char **argv) {
 				c->send('r');
 				c->send(winner);
 				cur = player.player_id == 0 ? 0 : 6;
-				c->send_buffer.insert(c->send_buffer.end(), dices.begin()+cur, dices.end()+cur+6);
+				c->send_buffer.insert(c->send_buffer.end(), dices.begin()+cur, dices.begin()+cur+6);
 			}
 			else if(state == 2){
 				//send action requirements

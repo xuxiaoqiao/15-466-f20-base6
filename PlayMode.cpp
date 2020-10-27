@@ -139,7 +139,7 @@ void PlayMode::update(float elapsed) {
 				case 'r':{
 					winner = c->recv_buffer[1];
 					bool win = (winner == id) ? true:false;
-					std::cout<<"winner "<<winner<<std::endl;
+					std::cout<<"winner "<<(int) winner<<std::endl;
 					std::vector<std::pair<std::string, std::vector<uint8_t>>> res;
 					other_dices.clear();
 					other_dices.insert(other_dices.begin(), c->recv_buffer.begin() + 2, c->recv_buffer.begin() + 8);
@@ -147,6 +147,7 @@ void PlayMode::update(float elapsed) {
 					res.push_back(std::make_pair(name, dices));
 					in_game_panel->set_state_reveal(res,win);
 					c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 8);
+					break;
 				}
 				default:
 					throw std::runtime_error("Server sent unknown message type '" + std::to_string(type) + "'");
