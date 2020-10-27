@@ -5,7 +5,7 @@
 namespace view {
 
 InGamePanel::InGamePanel() {
-	set_state_respond_claim(2, 2);
+	set_state_reveal({{"xiaoqiao", {1, 2, 3}}, {"zizhuo", {3, 4, 5}}}, true);
 }
 
 void InGamePanel::draw() {
@@ -265,7 +265,14 @@ void RevealBoardDialog::set_reveal_result(const std::vector<std::pair<std::strin
 	int x_cursor = 200;
 	int y_cursor = 500;
 	int font_size = 32;
-	result_.resize(result.size());
+	if (result_.size() > result.size()) {
+		result_.resize(result.size());
+	} else if (result_.size() < result.size()) {
+		for (size_t i = result_.size(); i < result.size(); i++) {
+			result_.emplace_back(std::make_shared<TextSpan>(), std::make_shared<TextSpan>());
+		}
+	}
+
 	for (size_t i = 0; i < result.size(); i++) {
 		result_.at(i).first->set_text(result.at(i).first + ": ").set_position(x_cursor, y_cursor);
 		std::stringstream ss;
