@@ -102,8 +102,8 @@ bool InGamePanel::handle_keypress(SDL_Keycode key) {
 }
 
 WaitingClaimDialog::WaitingClaimDialog() {
-	label_->set_text("Waiting responses from the other player");
-	TextSpanCenter(label_.get(), 600);
+	label_->set_text("Waiting responses from the other player").set_font_size(32);
+	TextSpanCenter(label_.get(), 400);
 }
 
 void WaitingClaimDialog::draw() { label_->draw(); }
@@ -264,17 +264,20 @@ void RevealBoardDialog::draw() {
 		p.second->draw();
 	}
 	label_->draw();
+	help_msg_->draw();
 }
 void RevealBoardDialog::set_reveal_result(const std::vector<std::pair<std::string, std::vector<uint8_t>>> &result,
                                           bool win) {
 	if (win) {
 		label_->set_text("You win.");
+		TextSpanCenter(label_.get(), 200);
 	} else {
 		label_->set_text("You lose.");
+		TextSpanCenter(label_.get(), 200);
 	}
 
-	int x_cursor = 200;
-	int y_cursor = 500;
+	int x_cursor = 550;
+	int y_cursor = 300;
 	int font_size = 32;
 	if (result_.size() > result.size()) {
 		result_.resize(result.size());
@@ -308,8 +311,10 @@ bool RevealBoardDialog::handle_keypress(SDL_Keycode key) {
 void RevealBoardDialog::set_listener_on_done_reveal(std::function<void()> listener) { listener_ = std::move(listener); }
 
 RevealBoardDialog::RevealBoardDialog() {
-	label_->set_position(200, 400).set_font_size(48);
-	help_msg_->set_position(550, 600).set_text("[End of game, press enter to quit]");
+	label_->set_font_size(48);
+	TextSpanCenter(label_.get(), 200);
+	help_msg_->set_text("[End of game, press enter to quit]");
+	TextSpanCenter(help_msg_.get(), 600);
 }
 
 PlayerTile &PlayerTile::set_username(const std::string &username) {
