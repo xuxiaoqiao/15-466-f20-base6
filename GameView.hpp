@@ -109,7 +109,6 @@ public:
 	InGamePanel();
 	void draw();
 	bool handle_keypress(SDL_Keycode key);
-	void set_players(std::vector<std::pair<std::string, int>> &players);
 	void set_self_dices(std::vector<uint8_t> dices);
 
 	/* 0: waiting for other players.
@@ -148,11 +147,21 @@ private:
 class WaitingRoomPanel {
 public:
 	WaitingRoomPanel() {
-		heading_->set_text("AAAA").set_position(0, 0).set_font_size(48);
-		help_msg_->set_text("[Press enter to begin]");
+		auto center = [](TextSpan *s, int y_pos) {
+			int width = s->get_width();
+			s->set_position(((int)ViewContext::get().logical_size_.x - width) / 2, y_pos);
+		};
+		heading_->set_text("AAAA").set_font_size(48);
+		center(heading_.get(), 50);
+		waiting_room_label_->set_text("Waiting room").set_font_size(16);
+		center(waiting_room_label_.get(), 100);
+		help_msg_->set_text("[Press enter to begin]").set_font_size(16);
+		center(help_msg_.get(), 600);
+
 	}
 	void draw() {
 		heading_->draw();
+		waiting_room_label_->draw();
 		help_msg_->draw();
 		for (auto &p : players_) {
 			p->draw();
@@ -184,13 +193,14 @@ public:
 				name += " (You)";
 			}
 			players_.at(i)->set_text(name);
-			players_.at(i)->set_position(200, 32 * i + 200).set_font_size(32);
+			players_.at(i)->set_position(500, 32 * i + 200).set_font_size(32).set_font(FontFace::IBMPlexMono);
 		}
 	}
 private:
 	std::vector<std::shared_ptr<TextSpan>> players_;
 	std::function<void()> listener_;
 	TextSpanPtr heading_ = std::make_shared<TextSpan>();
+	TextSpanPtr waiting_room_label_ = std::make_shared<TextSpan>();
 	TextSpanPtr help_msg_ = std::make_shared<TextSpan>();
 
 };
