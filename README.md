@@ -8,6 +8,7 @@ Each player has 6 dices and one of the player will make a claim on how many dice
 
 Networking: 
 The Connection interface provided is used to transmit state messages. User action and required game state message is transmitted such as the dice state for a user and the claim other user made.
+Currently only supports 2 player at a time.
 
 Screen Shot:
 

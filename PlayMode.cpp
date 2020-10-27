@@ -49,18 +49,6 @@ handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 
 void PlayMode::update(float elapsed) {
 
-	//queue data for sending to server:
-	//TODO: send something that makes sense for your game
-	if (action == 1){
-		//let the server know a new game starts
-		action = 0;
-		state = State::PLAYING;
-	}
-	else if (action == 3){
-		//reveal
-		action = 0;
-	}
-
 	//send/receive data:
 	client.poll([this](Connection *c, Connection::Event event){
 		if (event == Connection::OnOpen) {
