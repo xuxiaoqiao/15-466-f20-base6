@@ -20,6 +20,7 @@ PlayMode::PlayMode(Client &client_, std::string name_) : client(client_) {
 	players.push_back(std::make_pair(name, true));
 	game_state = 0;
 	waiting_room_panel = std::make_shared<view::WaitingRoomPanel>();
+	waiting_room_panel->set_players(players);
 	waiting_room_panel->set_listener_on_start([this]() {
 		client.connections.back().send('s');
 	});
