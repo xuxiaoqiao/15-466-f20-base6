@@ -146,19 +146,7 @@ private:
 
 class WaitingRoomPanel {
 public:
-	WaitingRoomPanel() {
-		auto center = [](TextSpan *s, int y_pos) {
-			int width = s->get_width();
-			s->set_position(((int)ViewContext::get().logical_size_.x - width) / 2, y_pos);
-		};
-		heading_->set_text("AAAA").set_font_size(48);
-		center(heading_.get(), 50);
-		waiting_room_label_->set_text("Waiting room").set_font_size(16);
-		center(waiting_room_label_.get(), 100);
-		help_msg_->set_text("[Press enter to begin]").set_font_size(16);
-		center(help_msg_.get(), 600);
-
-	}
+	WaitingRoomPanel();
 	void draw() {
 		heading_->draw();
 		waiting_room_label_->draw();
