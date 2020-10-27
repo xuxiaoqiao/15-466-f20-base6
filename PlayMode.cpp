@@ -25,6 +25,11 @@ PlayMode::PlayMode(Client &client_, std::string name_) : client(client_) {
 		assert(false && "not implemented");
 	});
 	switch_to_in_game();
+	in_game_panel->set_listener_make_claim([this](int claim_replica_, int claim_digit_) {
+        client.connections.back().send('c');
+        client.connections.back().send(claim_replica_);
+        client.connections.back().send(claim_digit_);
+    });
 }
 
 PlayMode::~PlayMode() {
@@ -39,41 +44,8 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 				return true;
 			}
 		}
-		if (evt.key.repeat) {
-			//ignore repeats
-		} else if (evt.key.keysym.sym == SDLK_a) {
-			left.downs += 1;
-			left.pressed = true;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_d) {
-			right.downs += 1;
-			right.pressed = true;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_w) {
-			up.downs += 1;
-			up.pressed = true;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_s) {
-			down.downs += 1;
-			down.pressed = true;
-			return true;
-		}
-	} else if (evt.type == SDL_KEYUP) {
-		if (evt.key.keysym.sym == SDLK_a) {
-			left.pressed = false;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_d) {
-			right.pressed = false;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_w) {
-			up.pressed = false;
-			return true;
-		} else if (evt.key.keysym.sym == SDLK_s) {
-			down.pressed = false;
-			return true;
-		}
-	}
 
+	}
 	return false;
 }
 
@@ -87,32 +59,11 @@ void PlayMode::update(float elapsed) {
 		action = 0;
 		state = State::PLAYING;
 	}
-	else if (action == 2){
-		client.connections.back().send('c');
-		client.connections.back().send(dice_num);
-		client.connections.back().send(dice_point);
-		action = 0;
-	}
 	else if (action == 3){
 		//reveal
 		client.connections.back().send('r');
 		action = 0;
 	}
-
-	if (left.downs || right.downs || down.downs || up.downs) {
-		//send a five-byte message of type 'b':
-		client.connections.back().send('b');
-		client.connections.back().send(left.downs);
-		client.connections.back().send(right.downs);
-		client.connections.back().send(down.downs);
-		client.connections.back().send(up.downs);
-	}
-
-	//reset button press counters:
-	left.downs = 0;
-	right.downs = 0;
-	up.downs = 0;
-	down.downs = 0;
 
 	//send/receive data:
 	client.poll([this](Connection *c, Connection::Event event){
@@ -136,7 +87,7 @@ void PlayMode::update(float elapsed) {
 					);
 					if (c->recv_buffer.size() < 5 + size) break; //if whole message isn't here, can't process
 					//whole message *is* here, so set current server message:
-					std::string other_name = std::string(c->recv_buffer.begin() + 5, c->recv_buffer.begin() + 5 + size);
+					other_name = std::string(c->recv_buffer.begin() + 5, c->recv_buffer.begin() + 5 + size);
 					if (!other_player_present){
 						players.push_back(std::make_pair(other_name, false));
 						other_player_present = true;
@@ -155,15 +106,34 @@ void PlayMode::update(float elapsed) {
 				}
 				case 'c':{
 					if (c->recv_buffer[1] == 'a'){
+						//about to make claim
 						state = State::CLAIM;
 						dice_num = c->recv_buffer[2];
 						dice_point = c->recv_buffer[3];
+						if (first_round){
+							//go to makeclaim dialog directly
+						}else{
+							//go to respond dialog
+						}
 					}else{
+						//waiting others
 						state = State::HOLDING;
+						in_game_panel->set_state_waiting_others();
 					}
-
+					first_round = false;
 					c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 4);
 					break;
+				}
+				case 'r':{
+					winner = c->recv_buffer[1];
+					bool win = (winner == id) ? true:false;
+					std::vector<std::pair<std::string, std::vector<uint8_t>>> res;
+					other_dices.clear();
+					other_dices.insert(dices.begin(), c->recv_buffer.begin() + 2, c->recv_buffer.begin() + 8);
+					res.push_back(std::make_pair(other_name, other_dices));
+					res.push_back(std::make_pair(name, dices));
+					in_game_panel->set_state_reveal(res,win);
+					c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 8);
 				}
 				default:
 					throw std::runtime_error("Server sent unknown message type '" + std::to_string(type) + "'");

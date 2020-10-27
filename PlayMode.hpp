@@ -25,8 +25,11 @@ struct PlayMode : Mode {
 	std::vector<std::pair<std::string, bool>> players;
 	uint8_t id = 0;
 	bool other_player_present = false;
+	std::string other_name;
+	bool first_round = true;
 	uint8_t dice_num = 1;
 	uint8_t dice_point = 2;
+	uint8_t winner = 2;
 	enum class State{
 		WAITING,
 		PLAYING,
@@ -35,12 +38,10 @@ struct PlayMode : Mode {
 	};
 	State state = State::WAITING;
 	//input tracking:
-	struct Button {
-		uint8_t downs = 0;
-		uint8_t pressed = 0;
-	} left, right, down, up;
+
 	int action = 0;
-	std::vector<u_int8_t> dices;
+	std::vector<uint8_t> dices;
+	std::vector<uint8_t> other_dices;
 
 	//last message from server:
 	std::string server_message;
