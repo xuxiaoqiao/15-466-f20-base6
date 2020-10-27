@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 							dice_num = c->recv_buffer[1];
 							dice_point = c->recv_buffer[2];
 							cur_player = (cur_player + 1) % 2;
-							waiting = false;
+							c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin()+3);
 						}
 						else if (type == 'r'){
 							bool res = check_result(dices, dice_num, dice_point);
