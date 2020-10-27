@@ -224,18 +224,20 @@ int main(int argc, char **argv) {
 					}
 				}
 			}else if (state == 1){
-				std::cout<<"prepare to send dices"<<std::endl;
+				//send inital dice states
 				c->send('d');
 				c->send_buffer.insert(c->send_buffer.end(), dices.begin()+cur, dices.begin()+cur+6);
-				std::cout<<"sent dices"<<std::endl;
 				cur += 6;
 			}
 			else if (state == 3){
+				//send reveal states
 				c->send('r');
 				c->send(winner);
-				c->send_buffer.insert(c->send_buffer.end(), dices.begin(), dices.end());
+				cur = player.player_id == 0 ? 0 : 6;
+				c->send_buffer.insert(c->send_buffer.end(), dices.begin()+cur, dices.end()+cur+6);
 			}
 			else if(state == 2){
+				//send action requirements
 				c->send('c');
 				if (player.player_id == cur_player){
 					c->send('a');
