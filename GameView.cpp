@@ -6,6 +6,7 @@ namespace view {
 
 InGamePanel::InGamePanel() {
 	set_state_waiting_others();
+	dice_view_->set_font_size(32).set_font(FontFace::IBMPlexMono);
 }
 
 void InGamePanel::draw() {
@@ -20,6 +21,7 @@ void InGamePanel::draw() {
 			break;
 		default: assert(0 && "unreachable code");
 	}
+	dice_view_->draw();
 }
 
 int InGamePanel::get_panel_state() {
@@ -65,19 +67,21 @@ void InGamePanel::set_listener_done_reveal(std::function<void()> listener) {
 	done_reveal_listener_ = std::move(listener);
 }
 
-void InGamePanel::set_players(std::vector<std::pair<std::string, int>> &players) {
-	players_.resize(players.size());
-	for (size_t i = 0; i < players.size(); i++) {
-		players_[i]->set_username(players.at(i).first).set_position(500 + 500 * i, 500).set_score(players.at(i).second);
-	}
-}
+//void InGamePanel::set_players(std::vector<std::pair<std::string, int>> &players) {
+//	players_.resize(players.size());
+//	for (size_t i = 0; i < players.size(); i++) {
+//		players_[i]->set_username(players.at(i).first).set_position(500 + 500 * i, 500).set_score(players.at(i).second);
+//	}
+//}
 
 void InGamePanel::set_self_dices(std::vector<uint8_t> dices) {
 	std::stringstream ss;
 	for (int i: dices) {
 		ss << '[' << i << ']';
 	}
-	dice_view_->set_text(ss.str());
+	dice_view_->set_text("Your dices: " + ss.str());
+	int dice_view_width = dice_view_->get_width();
+	dice_view_->set_position(((int)ViewContext::get().logical_size_.x - dice_view_width) / 2, 16);
 }
 bool InGamePanel::handle_keypress(SDL_Keycode key) {
 	switch (dialog_.index()) {
@@ -204,13 +208,18 @@ void MakeClaimDialog::update_content() {
 /************** RespondClaimDialog **********/
 
 RespondClaimDialog::RespondClaimDialog() {
+	auto center = [](TextSpan *s, int y_pos) {
+		int width = s->get_width();
+		s->set_position(((int)ViewContext::get().logical_size_.x - width) / 2, y_pos);
+	};
 	prompt1_->set_text("The other player made an claim:")
 		.set_font_size(48)
 		.set_position(300, 200);
 	prompt2_->set_font_size(48).set_position(300, 248);
 	reveal_->set_font_size(32).set_font(FontFace::IBMPlexMono).set_position(400, 450);
 	continue_->set_font_size(32).set_font(FontFace::IBMPlexMono).set_position(600, 450);
-	help_msg_->set_text("[Use arrow keys to select. Press enter to submit]").set_position(550, 600);
+	help_msg_->set_text("[Use arrow keys to select. Press enter to submit]");
+	center(help_msg_.get(), 600);
 	update_content();
 }
 
