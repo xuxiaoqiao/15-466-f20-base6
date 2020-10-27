@@ -1,6 +1,7 @@
 #include "Mode.hpp"
 
 #include "Connection.hpp"
+#include "GameView.hpp"
 
 #include <glm/glm.hpp>
 
@@ -16,6 +17,8 @@ struct PlayMode : Mode {
 	virtual void update(float elapsed) override;
 	virtual void draw(glm::uvec2 const &drawable_size) override;
 
+	void switch_to_in_game();
+
 	//----- game state -----
 
 	//input tracking:
@@ -30,4 +33,11 @@ struct PlayMode : Mode {
 	//connection to server:
 	Client &client;
 
+	//
+	std::shared_ptr<view::WaitingRoomPanel> waiting_room_panel = nullptr;
+	std::shared_ptr<view::InGamePanel> in_game_panel = nullptr;
+	int panel_state = 0;
+
+	/* 0: in waiting room; 1: in game */
+	int game_state = 0;
 };

@@ -95,11 +95,6 @@ int main(int argc, char **argv) {
 	//------------ load assets --------------
 	call_load_functions();
 
-	//------------ create game mode + make current --------------
-	Mode::set_current(std::make_shared< PlayMode >(client));
-
-	//------------ main loop ------------
-
 	//this inline function will be called whenever the window is resized,
 	// and will update the window_size and drawable_size variables:
 	glm::uvec2 window_size; //size of window (layout pixels)
@@ -112,8 +107,14 @@ int main(int argc, char **argv) {
 		SDL_GL_GetDrawableSize(window, &w, &h);
 		drawable_size = glm::uvec2(w, h);
 		glViewport(0, 0, drawable_size.x, drawable_size.y);
+		view::ViewContext::set(window_size, drawable_size);
 	};
 	on_resize();
+
+	//------------ create game mode + make current --------------
+	Mode::set_current(std::make_shared< PlayMode >(client));
+
+	//------------ main loop ------------
 
 	//This will loop until the current mode is set to null:
 	while (Mode::current) {

@@ -106,6 +106,8 @@ CLIENT_NAMES =
 	LitColorTextureProgram
 	#ColorTextureProgram #not used right now, but you might want it
 	Sound
+	View
+	GameView
 	load_wav
 	load_opus
 	;
