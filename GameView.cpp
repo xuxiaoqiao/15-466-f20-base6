@@ -111,7 +111,7 @@ void WaitingClaimDialog::draw() { label_->draw(); }
 /************** MakeClaimDialog **********/
 MakeClaimDialog::MakeClaimDialog() {
 
-	title_->set_text("MakeClaimDialog title")
+	title_->set_text("Make Your Claim")
 		.set_font_size(48);
 	int title_width = title_->get_width();
 	title_->set_position(((int)ViewContext::get().logical_size_.x - title_width) / 2, 200);
@@ -340,10 +340,10 @@ void PlayerTile::draw() {
 }
 
 WaitingRoomPanel::WaitingRoomPanel() {
-	heading_->set_text("AAAA").set_font_size(48);
+	heading_->set_text("Bragging").set_font_size(48);
 	TextSpanCenter(heading_.get(), 50);
 	waiting_room_label_->set_text("Waiting room").set_font_size(16);
-	TextSpanCenter(waiting_room_label_.get(), 100);
+	TextSpanCenter(waiting_room_label_.get(), 120);
 	help_msg_->set_text("[Press enter to begin]").set_font_size(16);
 	TextSpanCenter(help_msg_.get(), 600);
 }
