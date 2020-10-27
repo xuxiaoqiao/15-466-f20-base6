@@ -21,8 +21,8 @@ int main(int argc, char **argv) {
 	try {
 #endif
 	//------------ command line arguments ------------
-	if (argc != 3) {
-		std::cerr << "Usage:\n\t./client <host> <port>" << std::endl;
+	if (argc != 4) {
+		std::cerr << "Usage:\n\t./client <host> <port> <name>" << std::endl;
 		return 1;
 	}
 
@@ -96,7 +96,8 @@ int main(int argc, char **argv) {
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	Mode::set_current(std::make_shared< PlayMode >(client));
+	std::string name(argv[3]);
+	Mode::set_current(std::make_shared< PlayMode >(client, name));
 
 	//------------ main loop ------------
 
