@@ -20,16 +20,9 @@ PlayMode::PlayMode(Client &client_, std::string name_) : client(client_) {
 	players.push_back(std::make_pair(name, true));
 	game_state = 0;
 	waiting_room_panel = std::make_shared<view::WaitingRoomPanel>();
-	waiting_room_panel->set_listener_on_join([]() {
-		// TODO
-		assert(false && "not implemented");
+	waiting_room_panel->set_listener_on_start([this]() {
+		client.connections.back().send('s');
 	});
-	switch_to_in_game();
-	in_game_panel->set_listener_make_claim([this](int claim_replica_, int claim_digit_) {
-        client.connections.back().send('c');
-        client.connections.back().send(claim_replica_);
-        client.connections.back().send(claim_digit_);
-    });
 }
 
 PlayMode::~PlayMode() {
@@ -43,10 +36,13 @@ handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 				action = 1;
 			}
 		}
-		in_game_panel->handle_keypress(evt.key.keysym.sym);
+		if (panel_state == 0) {
+			waiting_room_panel->handle_keypress(evt.key.keysym.sym);
+		} else {
+			in_game_panel->handle_keypress(evt.key.keysym.sym);
+		}
 	}
 
-	}
 	return false;
 }
 
@@ -56,13 +52,11 @@ void PlayMode::update(float elapsed) {
 	//TODO: send something that makes sense for your game
 	if (action == 1){
 		//let the server know a new game starts
-		client.connections.back().send('s');
 		action = 0;
 		state = State::PLAYING;
 	}
 	else if (action == 3){
 		//reveal
-		client.connections.back().send('r');
 		action = 0;
 	}
 
@@ -93,6 +87,9 @@ void PlayMode::update(float elapsed) {
 						players.push_back(std::make_pair(other_name, false));
 						other_player_present = true;
 					}
+					if (panel_state == 0) {
+						waiting_room_panel->set_players(players);
+					}
 					//and consume this part of the buffer:
 					c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 5 + size);
 					break;
@@ -102,6 +99,10 @@ void PlayMode::update(float elapsed) {
 					state = State::PLAYING;
 					dices.clear();
 					dices.insert(dices.begin(), c->recv_buffer.begin() + 1, c->recv_buffer.begin() + 7);
+					if (panel_state == 0) {
+						switch_to_in_game();
+					}
+					in_game_panel->set_self_dices(dices);
 					c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 7);
 					break;
 				}
@@ -113,10 +114,15 @@ void PlayMode::update(float elapsed) {
 						dice_point = c->recv_buffer[3];
 						if (first_round){
 							//go to makeclaim dialog directly
+							if (panel_state == 1) {
+								in_game_panel->set_state_make_claim();
+							}
 						}else{
 							//go to respond dialog
+							if (panel_state == 1) {
+								in_game_panel->set_state_respond_claim(dice_num, dice_point);
+							}
 						}
-						// TODO(xiaoqiao) switch to "respond to claim"
 					}else{
 						//waiting others
 						state = State::HOLDING;
@@ -164,4 +170,17 @@ void PlayMode::switch_to_in_game() {
 	panel_state = 1;
 	waiting_room_panel.reset();
 	in_game_panel = std::make_shared<view::InGamePanel>();
+	in_game_panel->set_listener_make_claim([this](int claim_replica_, int claim_digit_) {
+		client.connections.back().send('c');
+		client.connections.back().send(claim_replica_);
+		client.connections.back().send(claim_digit_);
+	});
+	in_game_panel->set_listener_respond_claim([this](int respond){
+		if (respond == 0) {
+			client.connections.back().send('r');
+		} else {
+			in_game_panel->set_state_make_claim();
+		}
+	});
+	in_game_panel->set_listener_done_reveal([](){ std::exit(0); });
 }

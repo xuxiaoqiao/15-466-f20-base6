@@ -110,7 +110,7 @@ public:
 	void draw();
 	bool handle_keypress(SDL_Keycode key);
 	void set_players(std::vector<std::pair<std::string, int>> &players);
-	void set_self_dices(std::array<int, 6> dices);
+	void set_self_dices(std::vector<uint8_t> dices);
 
 	/* 0: waiting for other players.
 	 * 1: received a claim from the other player, decide to "reveal" or "continue"
@@ -147,11 +147,52 @@ private:
 
 class WaitingRoomPanel {
 public:
-	void draw() {}
-	bool handle_event(/* TODO: signature */) { return false; }
+	WaitingRoomPanel() {
+		heading_->set_text("AAAA").set_position(0, 0).set_font_size(48);
+		help_msg_->set_text("[Press enter to begin]");
+	}
+	void draw() {
+		heading_->draw();
+		help_msg_->draw();
+		for (auto &p : players_) {
+			p->draw();
+		}
+	}
+	bool handle_keypress(SDL_Keycode key) {
+		switch (key) {
+			case SDLK_RETURN: listener_();
+				return true;
+			default: return false;
+		}
+	}
 
-	void set_listener_on_join(std::function<void()> listener) {}
-	void set_players(std::vector<std::pair<std::string, bool>> players) {}
+	void set_listener_on_start(std::function<void()> listener) { listener_ = std::move(listener); }
+	void set_players(std::vector<std::pair<std::string, bool>> players) {
+		size_t current_size = players_.size();
+		size_t target_size = players.size();
+		if (current_size > target_size) {
+			players_.resize(target_size);
+		} else if (current_size < target_size) {
+			for (size_t i = current_size; i < target_size; i++) {
+				players_.emplace_back(std::make_shared<TextSpan>());
+			}
+		}
+
+		for (size_t i = 0; i < players.size(); i++) {
+			std::string name = players.at(i).first;
+			if (players.at(i).second) {
+				name += " (You)";
+			}
+			players_.at(i)->set_text(name);
+			players_.at(i)->set_position(200, 32 * i + 200).set_font_size(32);
+		}
+	}
+private:
+	std::vector<std::shared_ptr<TextSpan>> players_;
+	std::function<void()> listener_;
+	TextSpanPtr heading_ = std::make_shared<TextSpan>();
+	TextSpanPtr help_msg_ = std::make_shared<TextSpan>();
+
 };
 
 }

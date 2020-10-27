@@ -5,7 +5,7 @@
 namespace view {
 
 InGamePanel::InGamePanel() {
-	set_state_reveal({{"xiaoqiao", {1, 2, 3}}, {"zizhuo", {3, 4, 5}}}, true);
+	set_state_waiting_others();
 }
 
 void InGamePanel::draw() {
@@ -72,7 +72,7 @@ void InGamePanel::set_players(std::vector<std::pair<std::string, int>> &players)
 	}
 }
 
-void InGamePanel::set_self_dices(std::array<int, 6> dices) {
+void InGamePanel::set_self_dices(std::vector<uint8_t> dices) {
 	std::stringstream ss;
 	for (int i: dices) {
 		ss << '[' << i << ']';
