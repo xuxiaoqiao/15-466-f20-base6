@@ -96,48 +96,53 @@ void PlayMode::update(float elapsed) {
 				}
 				case 'd':{ /// server tells you the state of my dice
 					if (c->recv_buffer.size() < 7) break;
-					state = State::PLAYING;
-					dices.clear();
-					dices.insert(dices.begin(), c->recv_buffer.begin() + 1, c->recv_buffer.begin() + 7);
-					if (panel_state == 0) {
-						switch_to_in_game();
+					if(to_be_update){
+						dices.clear();
+						dices.insert(dices.begin(), c->recv_buffer.begin() + 1, c->recv_buffer.begin() + 7);
+						if (panel_state == 0) {
+							switch_to_in_game();
+						}
+						in_game_panel->set_self_dices(dices);
 					}
-					in_game_panel->set_self_dices(dices);
 					c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 7);
 					break;
 				}
 				case 'c':{ ///
-					if (c->recv_buffer[1] == 'a'){
-						//about to make claim
-						state = State::CLAIM;
-						dice_num = c->recv_buffer[2];
-						dice_point = c->recv_buffer[3];
-						if (first_round){
-							//go to makeclaim dialog directly
-							if (panel_state == 1) {
-								in_game_panel->set_state_make_claim();
+					if(to_be_update){
+						if (c->recv_buffer[1] == 'a'){
+							//about to make claim
+							state = State::CLAIM;
+							dice_num = c->recv_buffer[2];
+							dice_point = c->recv_buffer[3];
+							if (first_round){
+								//go to makeclaim dialog directly
+								if (panel_state == 1) {
+									in_game_panel->set_state_make_claim();
+								}
+							}else{
+								//go to respond dialog
+								if (panel_state == 1) {
+									in_game_panel->set_state_respond_claim(dice_num, dice_point);
+								}
 							}
+							to_be_update = false;
 						}else{
-							//go to respond dialog
-							if (panel_state == 1) {
-								in_game_panel->set_state_respond_claim(dice_num, dice_point);
-							}
+							//waiting others
+							std::cout<<"wating response" << std::endl;
+							in_game_panel->set_state_waiting_others();
 						}
-					}else{
-						//waiting others
-						state = State::HOLDING;
-						in_game_panel->set_state_waiting_others();
+						first_round = false;
 					}
-					first_round = false;
 					c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 4);
 					break;
 				}
 				case 'r':{
 					winner = c->recv_buffer[1];
 					bool win = (winner == id) ? true:false;
+					std::cout<<"winner "<<winner<<std::endl;
 					std::vector<std::pair<std::string, std::vector<uint8_t>>> res;
 					other_dices.clear();
-					other_dices.insert(dices.begin(), c->recv_buffer.begin() + 2, c->recv_buffer.begin() + 8);
+					other_dices.insert(other_dices.begin(), c->recv_buffer.begin() + 2, c->recv_buffer.begin() + 8);
 					res.push_back(std::make_pair(other_name, other_dices));
 					res.push_back(std::make_pair(name, dices));
 					in_game_panel->set_state_reveal(res,win);
@@ -172,12 +177,14 @@ void PlayMode::switch_to_in_game() {
 	in_game_panel = std::make_shared<view::InGamePanel>();
 	in_game_panel->set_listener_make_claim([this](int claim_replica_, int claim_digit_) {
 		client.connections.back().send('c');
-		client.connections.back().send(claim_replica_);
-		client.connections.back().send(claim_digit_);
+		client.connections.back().send((uint8_t) claim_replica_);
+		client.connections.back().send((uint8_t) claim_digit_);
+		to_be_update = true;
 	});
 	in_game_panel->set_listener_respond_claim([this](int respond){
 		if (respond == 0) {
 			client.connections.back().send('r');
+			to_be_update = true;
 		} else {
 			in_game_panel->set_state_make_claim();
 		}

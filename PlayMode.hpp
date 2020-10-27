@@ -48,7 +48,7 @@ struct PlayMode : Mode {
 
 	//connection to server:
 	Client &client;
-
+	bool to_be_update = true;
 	//
 	std::shared_ptr<view::WaitingRoomPanel> waiting_room_panel = nullptr;
 	std::shared_ptr<view::InGamePanel> in_game_panel = nullptr;

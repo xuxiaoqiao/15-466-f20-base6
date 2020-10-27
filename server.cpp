@@ -152,6 +152,7 @@ int main(int argc, char **argv) {
 								winner = player.player_id;
 							}
 							state = 3;
+							c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin()+1);
 						}
 						else{
 							if (type != 'b') {
@@ -207,7 +208,6 @@ int main(int argc, char **argv) {
 
 		//send updated game state to all clients
 		//TODO: update for your game state
-		std::cout<<"about to update status"<<std::endl;
 		int cur = 0;
 		for (auto &[c, player] : players) {
 			// (void)player; //work around "unused variable" warning on whatever g++ github actions uses
@@ -231,6 +231,7 @@ int main(int argc, char **argv) {
 			}
 			else if (state == 3){
 				//send reveal states
+				std::cout<<"send reveal state"<<std::endl;
 				c->send('r');
 				c->send(winner);
 				cur = player.player_id == 0 ? 0 : 6;
