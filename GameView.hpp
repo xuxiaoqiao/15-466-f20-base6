@@ -41,6 +41,7 @@ private:
 	TextSpanPtr prompt3_ = std::make_shared<TextSpan>();
 	TextSpanPtr replica_view_ = std::make_shared<TextSpan>();
 	TextSpanPtr digit_view_ = std::make_shared<TextSpan>();
+	TextSpanPtr help_msg_ = std::make_shared<TextSpan>();
 	std::function<void(int, int)> listener_;
 	int claim_replica_ = 1;
 	int claim_digit_ = 1;
@@ -51,15 +52,22 @@ class RespondClaimDialog {
 public:
 	// listener: 0: end and reveal, 1: continue
 	RespondClaimDialog();
+	void set_claim_content(int claim_replica, int claim_digit) {
+		claim_replica_ = claim_replica;
+		claim_digit_ = claim_digit;
+		update_content();
+	}
 	void set_listener_on_submit(std::function<void(int)> listener);
 	void draw();
 	bool handle_keypress(SDL_Keycode key);
 
 private:
 	void update_content();
-	TextSpanPtr prompt_ = std::make_shared<TextSpan>();
+	TextSpanPtr prompt1_ = std::make_shared<TextSpan>();
+	TextSpanPtr prompt2_ = std::make_shared<TextSpan>();
 	TextSpanPtr reveal_ = std::make_shared<TextSpan>();
 	TextSpanPtr continue_ = std::make_shared<TextSpan>();
+	TextSpanPtr help_msg_ = std::make_shared<TextSpan>();
 	std::function<void(bool)> listener_;
 
 	/**
@@ -67,6 +75,7 @@ private:
 	 * 1: focus on "[continue]"
 	 */
 	int element_focus_position_ = 0;
+	int claim_replica_ = 0, claim_digit_ = 0;
 
 };
 
@@ -82,19 +91,22 @@ private:
 
 class RevealBoardDialog {
 public:
+	RevealBoardDialog();
 	void draw();
-	void set_reveal_result(const std::vector<std::pair<std::string, std::array<int, 6>>> &result, bool win);
+	void set_reveal_result(const std::vector<std::pair<std::string, std::vector<uint8_t>>> &result, bool win);
 	void set_listener_on_done_reveal(std::function<void()> listener);
 	bool handle_keypress(SDL_Keycode key);
 
 private:
-	std::vector<std::pair<TextSpanPtr, TextSpanPtr>> result_;
 	TextSpanPtr label_ = std::make_shared<TextSpan>();
+	std::vector<std::pair<TextSpanPtr, TextSpanPtr>> result_;
+	TextSpanPtr help_msg_ = std::make_shared<TextSpan>();
 	std::function<void()> listener_;
 };
 
 class InGamePanel {
 public:
+	InGamePanel();
 	void draw();
 	bool handle_keypress(SDL_Keycode key);
 	void set_players(std::vector<std::pair<std::string, int>> &players);
@@ -107,7 +119,7 @@ public:
 	 */
 	int get_panel_state();
 
-	void set_state_respond_claim(const std::string &player, const std::string &claim);
+	void set_state_respond_claim(int claim_replica, int claim_digit);
 	void set_listener_respond_claim(std::function<void(int)> listener);
 
 	void set_state_make_claim();
@@ -115,7 +127,7 @@ public:
 
 	void set_state_waiting_others();
 
-	void set_state_reveal(const std::vector<std::array<int, 6>> &dices);
+	void set_state_reveal(const std::vector<std::pair<std::string, std::vector<uint8_t>>> &dices, bool win);
 	void set_listener_done_reveal(std::function<void()> listener);
 
 private:

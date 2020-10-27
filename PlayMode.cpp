@@ -35,15 +35,16 @@ PlayMode::PlayMode(Client &client_, std::string name_) : client(client_) {
 PlayMode::~PlayMode() {
 }
 
-bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
-
+bool PlayMode::
+handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	if (evt.type == SDL_KEYDOWN) {
 		if (state == State::WAITING){
 			if (evt.key.keysym.sym == SDLK_RETURN){
 				action = 1;
-				return true;
 			}
 		}
+		in_game_panel->handle_keypress(evt.key.keysym.sym);
+	}
 
 	}
 	return false;
@@ -80,7 +81,7 @@ void PlayMode::update(float elapsed) {
 				char type = c->recv_buffer[0];
 				switch (type)
 				{
-				case 'n':{
+				case 'n':{ //< in waiting room, tells name of other players an self id.
 					id = c->recv_buffer[1];
 					uint32_t size = (
 						(uint32_t(c->recv_buffer[2]) << 16) | (uint32_t(c->recv_buffer[3]) << 8) | (uint32_t(c->recv_buffer[4]))
@@ -96,7 +97,7 @@ void PlayMode::update(float elapsed) {
 					c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 5 + size);
 					break;
 				}
-				case 'd':{
+				case 'd':{ /// server tells you the state of my dice
 					if (c->recv_buffer.size() < 7) break;
 					state = State::PLAYING;
 					dices.clear();
@@ -104,7 +105,7 @@ void PlayMode::update(float elapsed) {
 					c->recv_buffer.erase(c->recv_buffer.begin(), c->recv_buffer.begin() + 7);
 					break;
 				}
-				case 'c':{
+				case 'c':{ ///
 					if (c->recv_buffer[1] == 'a'){
 						//about to make claim
 						state = State::CLAIM;
@@ -115,6 +116,7 @@ void PlayMode::update(float elapsed) {
 						}else{
 							//go to respond dialog
 						}
+						// TODO(xiaoqiao) switch to "respond to claim"
 					}else{
 						//waiting others
 						state = State::HOLDING;
